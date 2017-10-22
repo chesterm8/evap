@@ -1,0 +1,23 @@
+{
+  "name": "chesterm8-evap",
+  "version": "0.1.0",
+  "description": "Evap cooling effectiveness calculator",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chesterm8/evap.git"
+  },
+  "license": "GPL-3.0",
+  "scripts": {
+    "build": "npm run build-ts && npm run tslint",
+    "build-ts": "tsc",
+    "tslint": "tslint -c tslint.json -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/request": "^2.0.6",
+    "tslint": "^5.8.0",
+    "typescript": "^2.5.3"
+  },
+  "dependencies": {
+    "request": "^2.83.0"
+  }
+}

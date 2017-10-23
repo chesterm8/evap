@@ -6,12 +6,21 @@ module['exports'] = function simpleHttpRequest (hook) {
         }
         var json = JSON.parse(body);
         var datum = json.observations.data[0];
-        var calculated = calculate(datum.air_temp, datum.rel_hum, datum.press_msl);
-        hook.res.end(calculated);
+        var airTemp = datum.air_temp;
+        var relativeHumidity = datum.rel_hum;
+        var airPressure = datum.press_msl;
+        var evapCoolingEfficiency = 0.7;
+
+        var wetBulb = calculateWetBulb(airTemp, relativeHumidity, airPressure);
+        var airTempToWetBulbDelta = airTemp - wetBulb;
+        var maxEvapCoolingTempDrop = airTempToWetBulbDelta * evapCoolingEfficiency;
+        var minPossTemp = airTemp - maxEvapCoolingTempDrop;
+
+        hook.res.end(minPossTemp);
     })
 };
 
-function calculate(Ctemp, rh, MBpressure)
+function calculateWetBulb(Ctemp, rh, MBpressure)
 {
     rh = parseFloat(rh);
 

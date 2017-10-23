@@ -1,7 +1,7 @@
 {
   "name": "chesterm8-evap",
   "version": "0.1.0",
-  "description": "Evap cooling effectiveness calculator",
+  "description": "Evaporative cooling effectiveness calculator",
   "repository": {
     "type": "git",
     "url": "https://github.com/chesterm8/evap.git"

@@ -16,25 +16,20 @@ module['exports'] = function simpleHttpRequest (hook) {
         var maxEvapCoolingTempDrop = airTempToWetBulbDelta * evapCoolingEfficiency;
         var minPossTemp = airTemp - maxEvapCoolingTempDrop;
 
-        hook.res.end(minPossTemp);
+        hook.res.end("<html><body><h1>"+minPossTemp.toFixed(1)+"</h1></body></html>");
     })
 };
 
 function calculateWetBulb(Ctemp, rh, MBpressure)
 {
-    rh = parseFloat(rh);
+    var rhFloat = parseFloat(rh);
 
     var Es = parseFloat(esubs(Ctemp));
 
+    var E2 = parseFloat(invertedRH(Es, rhFloat));
 
-    E2 = parseFloat(invertedRH(Es,rh));
-    Twguess = 0;
-    incr = 10;
-    previoussign = 1;
-    Edifference = 1;
-
-    return roundOff(calcwetbulb(Edifference,Twguess,Ctemp,MBpressure,E2,previoussign,incr));
-};
+    return calcwetbulb(Ctemp,MBpressure,E2);
+}
 
 function esubs(Ctemp)
 {
@@ -50,50 +45,38 @@ function invertedRH(Es,rh)
     return E;
 }
 
-function calcwetbulb(Edifference,Twguess,Ctemp,MBpressure,E2,previoussign,incr)
+function calcwetbulb(Ctemp,MBpressure,E2)
 {
-    outerloop:
-        while (Math.abs(Edifference) > 0.05)
-        {
-            Ewguess = 6.112 * Math.exp((17.67 * Twguess) / (Twguess + 243.5));
-            Eguess = Ewguess - MBpressure * (Ctemp - Twguess) * 0.00066 * (1 + (0.00115 * Twguess));
-            Edifference = E2 - Eguess;
+    var Twguess = 0;
+    var incr = 10;
+    var previoussign = 1;
+    var Edifference = 1;
 
-            if (Edifference == 0)
-            {
-                break outerloop;
+    while (Math.abs(Edifference) > 0.05) {
+        var Ewguess = 6.112 * Math.exp((17.67 * Twguess) / (Twguess + 243.5));
+        var Eguess = Ewguess - MBpressure * (Ctemp - Twguess) * 0.00066 * (1 + (0.00115 * Twguess));
+        Edifference = E2 - Eguess;
+
+        if (Edifference === 0) {
+            break;
+        } else {
+            if (Edifference < 0) {
+                reverseDirectionIfNeeded(-1);
             } else {
-                if (Edifference < 0)
-                {
-                    cursign = -1;
-                    if (cursign != previoussign)
-                    {
-                        previoussign = cursign;
-                        incr = incr/10;
-                    } else {
-                        incr = incr;
-                    }
-                } else {
-                    cursign = 1;
-                    if (cursign != previoussign)
-                    {
-                        previoussign = cursign;
-                        incr = incr/10;
-                    } else {
-                        incr = incr;
-                    }
-                }
+                reverseDirectionIfNeeded(1);
             }
-
-            Twguess = Twguess + incr * previoussign;
-
         }
-    wetbulb = Twguess;
-    return wetbulb;
-}
 
-function roundOff(value)
-{
-    value = Math.round(100*value)/100;
-    return value;
+        Twguess = Twguess + incr * previoussign;
+    }
+
+    return Twguess;
+
+    function reverseDirectionIfNeeded(cursign) {
+        if (cursign !== previoussign) {
+            //Overshoot - reverse direction and decrease step size
+            previoussign = cursign;
+            incr /= 10;
+        }
+    }
 }

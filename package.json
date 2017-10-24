@@ -7,13 +7,20 @@
     "url": "https://github.com/chesterm8/evap.git"
   },
   "scripts": {
-    "start": "microcule -w true src/index.js"
+    "start": "microcule -w true src/index.js",
+    "build": "npm run build-ts && npm run tslint",
+    "build-ts": "tsc",
+    "tslint": "tslint -c tslint.json -p tsconfig.json"
   },
   "license": "GPL-3.0",
   "dependencies": {
     "request": "^2.83.0"
   },
   "devDependencies": {
-    "microcule": "*"
+    "@types/node": "^8.0.46",
+    "@types/request": "^2.0.6",
+    "microcule": "*",
+    "tslint": "^5.8.0",
+    "typescript": "^2.5.3"
   }
 }

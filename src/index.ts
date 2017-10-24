@@ -17,7 +17,7 @@ export = function simpleHttpRequest(hook: any) {
         const maxEvapCoolingTempDrop = airTempToWetBulbDelta * evapCoolingEfficiency;
         const minPossTemp = airTemp - maxEvapCoolingTempDrop;
 
-        hook.res.end("<html><body><h1>" + minPossTemp.toFixed(1) + "</h1></body></html>");
+        hook.res.end("<html><body><h1>TEMP IS " + minPossTemp.toFixed(1) + "</h1></body></html>");
     });
 };
 

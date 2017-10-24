@@ -7,7 +7,7 @@
     "url": "https://github.com/chesterm8/evap.git"
   },
   "scripts": {
-    "start": "microcule -w true src/index.js",
+    "start": "microcule -w true build/index.js",
     "build": "npm run build-ts && npm run tslint",
     "build-ts": "tsc",
     "tslint": "tslint -c tslint.json -p tsconfig.json"

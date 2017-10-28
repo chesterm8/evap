@@ -1,25 +1,18 @@
-import * as request from "request";
-
 export = function simpleHttpRequest(hook: any) {
-    request.get("http://www.bom.gov.au/fwo/IDV60901/IDV60901.94870.json", (err, res, body) => {
-        if (err) {
-            return hook.res.end(err.messsage);
-        }
-        const json = JSON.parse(body);
-        const datum = json.observations.data[0];
-        const airTemp = datum.air_temp;
-        const relativeHumidity = datum.rel_hum;
-        const airPressure = datum.press_msl;
-        const evapCoolingEfficiency = 0.7;
+    const airTemp = 26;
+    const relativeHumidity = 29;
+    const airPressure = 1004.1;
+    const evapCoolingEfficiency = 0.7;
 
-        const wetBulb = calculateWetBulb(airTemp, relativeHumidity, airPressure);
-        const airTempToWetBulbDelta = airTemp - wetBulb;
-        const maxEvapCoolingTempDrop = airTempToWetBulbDelta * evapCoolingEfficiency;
-        const minPossTemp = airTemp - maxEvapCoolingTempDrop;
+    const wetBulb = calculateWetBulb(airTemp, relativeHumidity, airPressure);
+    const airTempToWetBulbDelta = airTemp - wetBulb;
+    const maxEvapCoolingTempDrop = airTempToWetBulbDelta * evapCoolingEfficiency;
+    const minPossTemp = airTemp - maxEvapCoolingTempDrop;
 
-        hook.res.end("<html><body><h1>" + minPossTemp.toFixed(1) + "</h1></body></html>");
-    });
+    hook.res.end("<html><body><h1>" + minPossTemp.toFixed(1) + "</h1></body></html>");
 };
+
+//Common code
 
 function calculateWetBulb(Ctemp: any, rh: any, MBpressure: any) {
     const rhFloat = parseFloat(rh);

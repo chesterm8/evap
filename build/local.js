@@ -1,5 +1,5 @@
 "use strict";
-const request = require("request");
+//Common code
 function calculateWetBulb(Ctemp, rh, MBpressure) {
     const rhFloat = parseFloat(rh);
     const Es = esubs(Ctemp);
@@ -46,20 +46,13 @@ function calcwetbulb(Ctemp, MBpressure, E2) {
     }
 }
 module.exports = function simpleHttpRequest(hook) {
-    request.get("http://www.bom.gov.au/fwo/IDV60901/IDV60901.94870.json", (err, res, body) => {
-        if (err) {
-            return hook.res.end(err.messsage);
-        }
-        const json = JSON.parse(body);
-        const datum = json.observations.data[0];
-        const airTemp = datum.air_temp;
-        const relativeHumidity = datum.rel_hum;
-        const airPressure = datum.press_msl;
-        const evapCoolingEfficiency = 0.7;
-        const wetBulb = calculateWetBulb(airTemp, relativeHumidity, airPressure);
-        const airTempToWetBulbDelta = airTemp - wetBulb;
-        const maxEvapCoolingTempDrop = airTempToWetBulbDelta * evapCoolingEfficiency;
-        const minPossTemp = airTemp - maxEvapCoolingTempDrop;
-        hook.res.end("<html><body><h1>" + minPossTemp.toFixed(1) + "</h1></body></html>");
-    });
+    const airTemp = 26;
+    const relativeHumidity = 29;
+    const airPressure = 1004.1;
+    const evapCoolingEfficiency = 0.7;
+    const wetBulb = calculateWetBulb(airTemp, relativeHumidity, airPressure);
+    const airTempToWetBulbDelta = airTemp - wetBulb;
+    const maxEvapCoolingTempDrop = airTempToWetBulbDelta * evapCoolingEfficiency;
+    const minPossTemp = airTemp - maxEvapCoolingTempDrop;
+    hook.res.end("<html><body><h1>" + minPossTemp.toFixed(1) + "</h1></body></html>");
 };

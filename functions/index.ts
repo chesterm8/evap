@@ -1,21 +1,29 @@
-import * as request from "request";
+import * as httpRequest from "request";
 import {DialogflowApp} from "actions-on-google";
+import * as functions from "firebase-functions";
 
-// Some variables we will use in this example
-const ACTION_PRICE = "calcMinTemp";
+process.env.DEBUG = "actions-on-google:*";
 
-export = function getTemp(hook: any) {
-    const assistant = new DialogflowApp({request: hook.req, response: hook.res});
+exports.evapCoolingGroup = {
+    assistant: functions.https.onRequest(assistant)//,
+    //website: functions.https.onRequest(website)
+};
+
+function assistant(request, response) {
+    const app = new DialogflowApp({request, response});
+    console.log("Request headers: " + JSON.stringify(request.headers));
+    console.log("Request body: " + JSON.stringify(request.body));
 
     // The Entry point to all our actions
     const actionMap = new Map();
-    actionMap.set(ACTION_PRICE, simpleHttpRequest);
+    actionMap.set("calcMinTemp", simpleHttpRequest);
+    actionMap.set("input.welcome", simpleHttpRequest);
 
-    assistant.handleRequest(actionMap);
-};
+    app.handleRequest(actionMap);
+}
 
-function simpleHttpRequest(assistant: any) {
-    request.get("http://www.bom.gov.au/fwo/IDV60901/IDV60901.94870.json", (err, res, body) => {
+function simpleHttpRequest(app: any) {
+    httpRequest.get("http://www.bom.gov.au/fwo/IDV60901/IDV60901.94870.json", (err, res, body) => {
         const json = JSON.parse(body);
         const datum = json.observations.data[0];
         const airTemp = datum.air_temp;
@@ -28,7 +36,7 @@ function simpleHttpRequest(assistant: any) {
         const maxEvapCoolingTempDrop = airTempToWetBulbDelta * evapCoolingEfficiency;
         const minPossTemp = airTemp - maxEvapCoolingTempDrop;
 
-        assistant.tell("The coldest the air coming out of the evaporative cooler could be at the moment is "
+        app.tell("The coldest the air coming out of the evaporative cooler could be at the moment is "
             + minPossTemp.toFixed(1) + " degrees");
     });
 }

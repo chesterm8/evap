@@ -5,11 +5,11 @@ import * as functions from "firebase-functions";
 process.env.DEBUG = "actions-on-google:*";
 
 exports.evapCoolingGroup = {
-    assistant: functions.https.onRequest(assistant)//,
+    assistant: functions.https.onRequest(assistantHandler)//,
     //website: functions.https.onRequest(website)
 };
 
-function assistant(request, response) {
+function assistantHandler(request: any, response: any) {
     const app = new DialogflowApp({request, response});
     console.log("Request headers: " + JSON.stringify(request.headers));
     console.log("Request body: " + JSON.stringify(request.body));
@@ -17,9 +17,13 @@ function assistant(request, response) {
     // The Entry point to all our actions
     const actionMap = new Map();
     actionMap.set("calcMinTemp", simpleHttpRequest);
-    actionMap.set("input.welcome", simpleHttpRequest);
+    actionMap.set("input.welcome", helloWorld);
 
     app.handleRequest(actionMap);
+}
+
+function helloWorld(app: any) {
+    app.tell("Hello, World!");
 }
 
 function simpleHttpRequest(app: any) {

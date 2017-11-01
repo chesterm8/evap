@@ -5,3 +5,4 @@ node_modules/
 .idea/**/tasks.xml
 .idea/dictionaries
 npm-debug.log
+*.js

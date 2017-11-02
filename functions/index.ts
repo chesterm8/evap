@@ -70,13 +70,11 @@ function calculateWetBulb(Ctemp: any, rh: any, MBpressure: any) {
 }
 
 function esubs(Ctemp: any) {
-    const Es = 6.112 * Math.exp(17.67 * Ctemp / (Ctemp + 243.5));
-    return Es;
+    return 6.112 * Math.exp(17.67 * Ctemp / (Ctemp + 243.5));
 }
 
 function invertedRH(Es: any, rh: any) {
-    const E = Es * (rh / 100);
-    return E;
+    return Es * (rh / 100);
 }
 
 function calcwetbulb(Ctemp: any, MBpressure: any, E2: any) {
@@ -100,7 +98,7 @@ function calcwetbulb(Ctemp: any, MBpressure: any, E2: any) {
             }
         }
 
-        Twguess = Twguess + incr * previoussign;
+        Twguess += incr * previoussign;
     }
 
     return Twguess;

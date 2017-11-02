@@ -5,8 +5,8 @@ import * as functions from "firebase-functions";
 process.env.DEBUG = "actions-on-google:*";
 
 exports.evapCoolingGroup = {
-    assistant: functions.https.onRequest(assistantHandler)//,
-    //website: functions.https.onRequest(website)
+    assistant: functions.https.onRequest(assistantHandler),
+    website: functions.https.onRequest(websiteHandler)
 };
 
 function assistantHandler(request: any, response: any) {
@@ -16,32 +16,42 @@ function assistantHandler(request: any, response: any) {
 
     // The Entry point to all our actions
     const actionMap = new Map();
-    actionMap.set("calcMinTemp", simpleHttpRequest);
+    actionMap.set("calcMinTemp", async () => {
+        const temp = await wetBulbFromMoorabbin();
+        app.tell("Expected evaporative cooling air temperature is "
+            + temp + " degrees");
+    });
     actionMap.set("input.welcome", helloWorld);
+    actionMap.set("input.unknown", helloWorld);
 
     app.handleRequest(actionMap);
+}
+
+function websiteHandler(request: any, response: any) {
+    response.status(200).send("<html><body><h1>" + wetBulbFromMoorabbin() + "</h1></body></html>");
 }
 
 function helloWorld(app: any) {
     app.tell("Hello, World!");
 }
 
-function simpleHttpRequest(app: any) {
-    httpRequest.get("http://www.bom.gov.au/fwo/IDV60901/IDV60901.94870.json", (err, res, body) => {
-        const json = JSON.parse(body);
-        const datum = json.observations.data[0];
-        const airTemp = datum.air_temp;
-        const relativeHumidity = datum.rel_hum;
-        const airPressure = datum.press_msl;
-        const evapCoolingEfficiency = 0.7;
+async function wetBulbFromMoorabbin(): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+        httpRequest.get("http://www.bom.gov.au/fwo/IDV60901/IDV60901.94870.json", (err, res, body) => {
+            const json = JSON.parse(body);
+            const datum = json.observations.data[0];
+            const airTemp = datum.air_temp;
+            const relativeHumidity = datum.rel_hum;
+            const airPressure = datum.press_msl;
+            const evapCoolingEfficiency = 0.7;
 
-        const wetBulb = calculateWetBulb(airTemp, relativeHumidity, airPressure);
-        const airTempToWetBulbDelta = airTemp - wetBulb;
-        const maxEvapCoolingTempDrop = airTempToWetBulbDelta * evapCoolingEfficiency;
-        const minPossTemp = airTemp - maxEvapCoolingTempDrop;
+            const wetBulb = calculateWetBulb(airTemp, relativeHumidity, airPressure);
+            const airTempToWetBulbDelta = airTemp - wetBulb;
+            const maxEvapCoolingTempDrop = airTempToWetBulbDelta * evapCoolingEfficiency;
+            const minPossTemp = airTemp - maxEvapCoolingTempDrop;
 
-        app.tell("The coldest the air coming out of the evaporative cooler could be at the moment is "
-            + minPossTemp.toFixed(1) + " degrees");
+            resolve(minPossTemp.toFixed(1));
+        });
     });
 }
 

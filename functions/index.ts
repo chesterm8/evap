@@ -17,9 +17,9 @@ function assistantHandler(request: any, response: any) {
     // The Entry point to all our actions
     const actionMap = new Map();
     actionMap.set("calcMinTemp", async () => {
-        const temp = await wetBulbFromMoorabbin();
+        const wetBulb: WetBulb = await wetBulbFromMoorabbin();
         app.tell("Expected evaporative cooling air temperature is "
-            + temp + " degrees");
+            + wetBulb.minCoolingTemp.toFixed(1) + " degrees");
     });
     actionMap.set("input.welcome", helloWorld);
     actionMap.set("input.unknown", helloWorld);
@@ -27,16 +27,18 @@ function assistantHandler(request: any, response: any) {
     app.handleRequest(actionMap);
 }
 
-function websiteHandler(request: any, response: any) {
-    response.status(200).send("<html><body><h1>" + wetBulbFromMoorabbin() + "</h1></body></html>");
+async function websiteHandler(request: any, response: any) {
+    const wetBulb = await wetBulbFromMoorabbin();
+    response.status(200).send("<html><body><h1>" + wetBulb.minCoolingTemp.toFixed(1)
+        + "</h1> (based on outside temp of " + wetBulb.outsideTemp.toFixed(1) + ")</body></html>");
 }
 
 function helloWorld(app: any) {
     app.tell("Hello, World!");
 }
 
-async function wetBulbFromMoorabbin(): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
+async function wetBulbFromMoorabbin(): Promise<WetBulb> {
+    return new Promise<WetBulb>((resolve, reject) => {
         httpRequest.get("http://www.bom.gov.au/fwo/IDV60901/IDV60901.94870.json", (err, res, body) => {
             const json = JSON.parse(body);
             const datum = json.observations.data[0];
@@ -50,7 +52,7 @@ async function wetBulbFromMoorabbin(): Promise<string> {
             const maxEvapCoolingTempDrop = airTempToWetBulbDelta * evapCoolingEfficiency;
             const minPossTemp = airTemp - maxEvapCoolingTempDrop;
 
-            resolve(minPossTemp.toFixed(1));
+            resolve({minCoolingTemp: minPossTemp, outsideTemp: airTemp});
         });
     });
 }

@@ -6,3 +6,4 @@ node_modules/
 .idea/dictionaries
 npm-debug.log
 *.js
+firebase-debug.log

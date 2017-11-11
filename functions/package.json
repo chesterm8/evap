@@ -17,11 +17,13 @@
     "actions-on-google": "^1.5.1",
     "firebase-admin": "^5.4.3",
     "firebase-functions": "^0.7.2",
-    "request": "^2.83.0"
+    "request": "^2.83.0",
+    "request-promise-native": "^1.0.5"
   },
   "devDependencies": {
     "@types/node": "^8.0.46",
     "@types/request": "^2.0.6",
+    "@types/request-promise-native": "^1.0.10",
     "microcule": "*",
     "tslint": "^5.8.0",
     "typescript": "^2.5.3"

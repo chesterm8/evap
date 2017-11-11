@@ -1,6 +1,9 @@
 # Evaporative cooling effectiveness calculator
 
-https://hook.io/chesterm8/evap-cooling
+Running in firebase.
+Deploy using `firebase deploy --only funcions`
+
+Actions on google to see the google home integration, dialogflow for the more generic voice configuration.
 
 Calculations taken from: http://www.crh.noaa.gov/epz/?n=wxcalc_rh
 

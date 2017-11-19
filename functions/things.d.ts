@@ -1,6 +1,7 @@
 declare module "actions-on-google";
 
-interface WetBulb {
-    minCoolingTemp: number;
-    outsideTemp: number;
+interface WeatherData {
+    airTemp: number;
+    relativeHumidity: number;
+    airPressure: number;
 }

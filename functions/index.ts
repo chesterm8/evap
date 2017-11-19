@@ -1,7 +1,7 @@
 import * as httpRequest from "request-promise-native";
 import {DialogflowApp} from "actions-on-google";
 import * as functions from "firebase-functions";
-import https from "https";
+import * as http from "http";
 
 process.env.DEBUG = "actions-on-google:*";
 
@@ -12,7 +12,8 @@ exports.evapCoolingGroup = {
 
 const bomBaseUrl = "http://www.bom.gov.au";
 const moorabinUri = "/fwo/IDV60901/IDV60901.94870.json";
-const scoresbyUri = "/fwo/IDV60901/IDV60901.95867.json";
+
+//const scoresbyUri = "/fwo/IDV60901/IDV60901.95867.json";
 
 function assistantHandler(request: any, response: any) {
     const app = new DialogflowApp({request, response});
@@ -22,9 +23,9 @@ function assistantHandler(request: any, response: any) {
     // The Entry point to all our actions
     const actionMap = new Map();
     actionMap.set("calcMinTemp", async () => {
-        const wetBulb: WetBulb = await calculate();
+        const wetBulb = await calculate(await getBomObservations());
         app.tell("Expected evaporative cooling air temperature is "
-            + wetBulb.minCoolingTemp.toFixed(1) + " degrees");
+            + wetBulb.toFixed(1) + " degrees");
     });
     actionMap.set("input.welcome", helloWorld);
     actionMap.set("input.unknown", helloWorld);
@@ -33,40 +34,63 @@ function assistantHandler(request: any, response: any) {
 }
 
 async function websiteHandler(request: any, response: any) {
-    const wetBulb = await calculate();
-    response.status(200).send("<html><body><h1>" + wetBulb.minCoolingTemp.toFixed(1)
-        + "</h1> (based on outside temp of " + wetBulb.outsideTemp.toFixed(1) + ")</body></html>");
+    const weatherData: WeatherData = await getBomObservations();
+    const airTemp: number = request.body.temp ? parseFloat(request.body.temp) : weatherData.airTemp;
+    const relativeHumidity: number = request.body.hum ? parseFloat(request.body.hum) : weatherData.relativeHumidity;
+    const airPressure: number = weatherData.airPressure;
+
+    const wetBulb: number = await calculate({airTemp, relativeHumidity, airPressure});
+
+    response.status(200).send("<html><body>" +
+        "<div>" +
+        "<h1>" + wetBulb.toFixed(1) + "</h1>" +
+        " (based on outside temp of " + airTemp.toFixed(1) + " and humidity of " + relativeHumidity.toFixed(1) + ")" +
+        "</div>" +
+        "<form method='post'>" +
+        "<div>" +
+        "<label for='temp'>Temperature:</label>" +
+        "<input type='text' id='temp' name='temp'>" +
+        "</div>" +
+        "<div>" +
+        "<label for='hum'>Humidity:</label>" +
+        "<input type='text' id='hum' name='hum'>" +
+        "</div>" +
+        "<div class='button'>" +
+        "<button type='submit'>Calculate with these values</button>" +
+        "</div>" +
+        "</form></body></html>");
 }
 
 function helloWorld(app: any) {
     app.tell("Hello, World!");
 }
 
-async function calculate(): WetBulb {
-
+async function getBomObservations(uri?: string): Promise<WeatherData> {
     const bomRequest = httpRequest.defaults({
         baseUrl: bomBaseUrl,
-        agent: new https.Agent()
+        agent: new http.Agent()
     });
 
-    const moorabinResponse = await bomRequest.get({
-        uri: moorabinUri
-    });
+    const moorabinResponse = await bomRequest.get({uri: uri == null ? moorabinUri : uri});
 
     const json = JSON.parse(moorabinResponse);
     const datum = json.observations.data[0];
     const airTemp = datum.air_temp;
-    const relativeHumidity = datum.rel_hum;
+    const relativeHumidity = parseFloat(datum.rel_hum);
     const airPressure = datum.press_msl;
+    return {airTemp, relativeHumidity, airPressure};
+}
+
+async function calculate(weatherData: WeatherData): Promise<number> {
 
     const evapCoolingEfficiency = 0.6;
 
-    const wetBulbTemp = calculateWetBulb(airTemp, parseFloat(relativeHumidity), airPressure);
-    const airTempToWetBulbDelta = airTemp - wetBulbTemp;
+    const wetBulbTemp = calculateWetBulb(weatherData.airTemp, weatherData.relativeHumidity, weatherData.airPressure);
+    const airTempToWetBulbDelta = weatherData.airTemp - wetBulbTemp;
     const maxEvapCoolingTempDrop = airTempToWetBulbDelta * evapCoolingEfficiency;
-    const minPossTemp = airTemp - maxEvapCoolingTempDrop;
+    const minPossTemp = weatherData.airTemp - maxEvapCoolingTempDrop;
 
-    return {minCoolingTemp: minPossTemp, outsideTemp: airTemp};
+    return minPossTemp;
 }
 
 //Code from http://www.crh.noaa.gov/epz/?n=wxcalc_rh (refactored heavily)

@@ -1,7 +1,7 @@
 # Evaporative cooling effectiveness calculator
 
 Running in firebase.
-Deploy using `firebase deploy --only funcions`
+Deploy using `firebase deploy --only functions`
 
 Actions on google to see the google home integration, dialogflow for the more generic voice configuration.
 

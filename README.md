@@ -3,6 +3,8 @@
 Running in firebase.
 Deploy using `firebase deploy --only functions`
 
+If the action on google home stops working go to https://console.actions.google.com and test it there 
+
 Actions on google to see the google home integration, dialogflow for the more generic voice configuration.
 
 Calculations taken from: http://www.crh.noaa.gov/epz/?n=wxcalc_rh

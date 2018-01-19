@@ -23,9 +23,11 @@ function assistantHandler(request: any, response: any) {
     // The Entry point to all our actions
     const actionMap = new Map();
     actionMap.set("calcMinTemp", async () => {
-        const wetBulb = await calculate(await getBomObservations());
+        const weatherData = await getBomObservations();
+        const wetBulb = await calculate(weatherData);
         app.tell("Expected evaporative cooling air temperature is "
-            + wetBulb.toFixed(1) + " degrees");
+            + wetBulb.toFixed(1) + " degrees based on outside temp of "
+            + weatherData.airTemp.toFixed(1) + " and humidity of " + weatherData.relativeHumidity.toFixed(1));
     });
     actionMap.set("input.welcome", helloWorld);
     actionMap.set("input.unknown", helloWorld);

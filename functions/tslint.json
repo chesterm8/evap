@@ -17,7 +17,7 @@
       "singleline": "never"
     },
     "no-console": false,
-    "max-line-length": 160,
+    "max-line-length": { "options": { "limit": 160 } },
     "comment-format": {
       "check-space": false
     },

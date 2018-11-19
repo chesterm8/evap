@@ -10,7 +10,7 @@ exports.evapCoolingGroup = {
     website: functions.https.onRequest(websiteHandler)
 };
 
-const bomBaseUrl = "http://www.bom.gov.au";
+const bomBaseUrl = "http://reg.bom.gov.au";
 const moorabinUri = "/fwo/IDV60901/IDV60901.94870.json";
 
 //const scoresbyUri = "/fwo/IDV60901/IDV60901.95867.json";
